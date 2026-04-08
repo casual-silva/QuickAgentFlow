@@ -1,0 +1,408 @@
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: #f5f7fa;
+}
+
+/* ===== AppShell：侧栏品牌条与主区 Header 同高对齐（均为 64px 顶栏） ===== */
+.app-shell-sider.ant-layout-sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0;
+}
+
+.app-shell-brand {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: 64px;
+  padding: 0 16px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+}
+
+/* 覆盖 ant Layout.Header 默认行高/内边距，避免实际高度超过 64px 与侧栏品牌条错位 */
+.app-shell-header.ant-layout-header {
+  height: 64px !important;
+  line-height: 1.25 !important;
+  padding-inline: 16px !important;
+  padding-block: 0 !important;
+}
+
+/* ===== 全局响应式：避免横向溢出，小屏压缩顶栏 ===== */
+@media (max-width: 576px) {
+  .app-shell-header.ant-layout-header {
+    height: auto !important;
+    min-height: 64px;
+    padding-block: 10px !important;
+  }
+
+  .app-shell-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+}
+
+.template-expand-modal-root .ant-modal {
+  max-width: min(920px, 96vw);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ===== React Flow 画布样式 ===== */
+
+/* 网格背景点柔化 */
+.workflow-flow-canvas .react-flow__background {
+  opacity: 0.6;
+}
+
+/* 连线：细贝塞尔感、半透明灰；选中/激活为品牌蓝 */
+.workflow-flow-canvas .react-flow__edge-path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: rgba(15, 23, 42, 0.22);
+  stroke-width: 1;
+}
+
+.workflow-flow-canvas .react-flow__connection-path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: rgba(0, 102, 255, 0.45);
+  stroke-width: 1;
+}
+
+.workflow-flow-canvas .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #0066ff !important;
+  stroke-width: 1.5 !important;
+  filter: none;
+}
+
+.workflow-flow-canvas .react-flow__edge .react-flow__edge-text {
+  font-weight: 500;
+}
+
+/* 箭头与端点：缩小箭头避免「戳」在节点上过于突兀 */
+.workflow-flow-canvas .react-flow__arrowhead polyline,
+.workflow-flow-canvas .react-flow__arrowhead polygon {
+  stroke-linejoin: round;
+}
+
+/* 句柄：小圆点，悬停节点或选中节点时显现；保留较大可点区域 */
+.workflow-flow-canvas .workflow-node-handle {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.workflow-flow-canvas .workflow-node-handle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #94a3b8;
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  pointer-events: none;
+}
+.workflow-flow-canvas .react-flow__node:hover .workflow-node-handle::after,
+.workflow-flow-canvas .react-flow__node.selected .workflow-node-handle::after {
+  opacity: 1;
+}
+.workflow-flow-canvas .react-flow__node.selected .workflow-node-handle::after {
+  background: #0066ff;
+}
+.workflow-flow-canvas .react-flow__handle.connecting::after,
+.workflow-flow-canvas .react-flow__handle.valid::after {
+  opacity: 1;
+  background: #0066ff;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* ===== 运行态边流动动画 ===== */
+@keyframes edge-flow {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.workflow-flow-canvas .react-flow__edge.edge-running .react-flow__edge-path {
+  stroke: #0066ff !important;
+  stroke-width: 1.5 !important;
+  stroke-dasharray: 6 4;
+  animation: edge-flow 0.6s linear infinite;
+}
+
+.workflow-flow-canvas .react-flow__edge.edge-success .react-flow__edge-path {
+  stroke: rgba(82, 196, 26, 0.85) !important;
+  stroke-width: 1.25 !important;
+}
+
+.workflow-flow-canvas .react-flow__edge.edge-failed .react-flow__edge-path {
+  stroke: rgba(255, 77, 79, 0.9) !important;
+  stroke-width: 1.25 !important;
+}
+
+/* 对齐辅助线 */
+.snap-line {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+}
+.snap-line-x {
+  width: 1px;
+  border-left: 1px dashed #155eef;
+  top: 0;
+  bottom: 0;
+}
+.snap-line-y {
+  height: 1px;
+  border-top: 1px dashed #155eef;
+  left: 0;
+  right: 0;
+}
+
+/* MiniMap 美化 */
+.workflow-flow-canvas .react-flow__minimap {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+/* 缩放 + 拖移 + 删除：同一 react-flow__controls 横排，与 MiniMap 左对齐留白 */
+.workflow-flow-canvas .workflow-flow-toolbar-controls {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px !important;
+  margin-left: 180px !important;
+}
+
+.workflow-flow-canvas .workflow-canvas-tool-active {
+  background: #e6f4ff !important;
+  color: #1677ff !important;
+}
+
+@media (max-width: 768px) {
+  .workflow-flow-canvas .workflow-flow-minimap-panel {
+    display: none !important;
+  }
+  .workflow-flow-canvas .workflow-flow-toolbar-controls {
+    margin-left: 8px !important;
+  }
+}
+
+/* ===== 画布节点：紧凑、少动效干扰 ===== */
+.workflow-node-card {
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.workflow-node-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 102, 255, 0.08), 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== 属性抽屉 ===== */
+.property-drawer .ant-drawer-body {
+  padding: 12px !important;
+  overflow: auto;
+}
+.property-drawer .ant-drawer-header {
+  padding: 10px 12px !important;
+}
+
+/* 属性面板：统一圆角、分段留白 */
+.property-panel-surface .ant-input,
+.property-panel-surface .ant-input-affix-wrapper,
+.property-panel-surface .ant-input-outlined,
+.property-panel-surface textarea.ant-input,
+.property-panel-surface .ant-select .ant-select-selector {
+  border-radius: 8px !important;
+}
+.property-panel-surface .ant-collapse > .ant-collapse-item > .ant-collapse-header {
+  padding-top: 14px !important;
+  padding-bottom: 10px !important;
+}
+.property-panel-surface .ant-collapse-ghost > .ant-collapse-item > .ant-collapse-header {
+  padding-top: 10px !important;
+}
+
+/* 模板中的变量：胶囊标签 */
+.template-var-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.template-var-pill {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #0f172a;
+  background: #e8ecf4;
+  border: 1px solid #d8dee9;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.property-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ===== 变量自动补全下拉 ===== */
+.template-input-area.ant-input {
+  border-radius: 8px;
+}
+
+.var-autocomplete-dropdown {
+  position: absolute;
+  z-index: 1050;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  padding: 4px 0;
+  min-width: 260px;
+}
+.var-autocomplete-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s;
+}
+.var-autocomplete-item:hover,
+.var-autocomplete-item.active {
+  background: #e6f4ff;
+}
+.var-autocomplete-item .var-path {
+  font-family: monospace;
+  color: #1677ff;
+}
+.var-autocomplete-item .var-label {
+  color: #8c8c8c;
+  font-size: 11px;
+}
+
+/* ===== Prompt IDE 变量高亮 ===== */
+.prompt-ide-overlay {
+  position: relative;
+}
+.prompt-ide-overlay .token-highlight {
+  background: rgba(21,94,239,0.08);
+  border-radius: 3px;
+  padding: 0 2px;
+  color: #155eef;
+  font-weight: 500;
+}
+
+/* ===== 数据血缘节点摘要 ===== */
+.node-lineage-badge {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #8c8c8c;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: default;
+  z-index: 5;
+}
+.node-lineage-badge.has-data {
+  color: #52c41a;
+  border-color: #b7eb8f;
+}
+
+/* ===== 节点库分类折叠 ===== */
+.node-palette-category {
+  margin-bottom: 4px;
+}
+.node-palette-category .ant-collapse-header {
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  color: #595959 !important;
+}
+.node-palette-category .ant-collapse-content-box {
+  padding: 4px 0 !important;
+}
+
+/* ===== 逻辑分组节点 ===== */
+.react-flow__node-group {
+  background: rgba(21, 94, 239, 0.04) !important;
+  border: 2px dashed rgba(21, 94, 239, 0.25) !important;
+  border-radius: 12px !important;
+  pointer-events: all;
+}
+.react-flow__node-group .react-flow__handle {
+  display: none;
+}
+
+/* ===== Chat 气泡按钮动画 ===== */
+@keyframes chat-bubble-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.chat-bubble-btn:hover {
+  animation: chat-bubble-pulse 0.6s ease-in-out infinite;
+}
+
+/* 运行观测全屏：保证表格与树在 flex 子项内可滚动 */
+.execution-obs-fullscreen-overlay .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.execution-obs-fullscreen-overlay .ant-tabs-tabpane {
+  height: 100%;
+  overflow: hidden;
+}
+.execution-obs-fullscreen-overlay .ant-tabs,
+.execution-obs-fullscreen-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.execution-obs-fullscreen-overlay .ant-tabs-content,
+.execution-obs-fullscreen-tabs .ant-tabs-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.execution-obs-fullscreen-tabs .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.execution-obs-fullscreen-tabs .ant-tabs-tabpane {
+  height: 100%;
+  overflow: auto;
+}

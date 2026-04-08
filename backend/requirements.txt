@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+typing-extensions>=4.0.0
+sqlmodel
+pydantic-settings
+langgraph
+langchain
+langchain-openai
+openai
+pypdf
+python-multipart
+fastmcp
+python-dotenv
+pytest
